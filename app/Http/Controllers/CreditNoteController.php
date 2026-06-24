@@ -269,18 +269,7 @@ class CreditNoteController extends AppBaseController
         if ($creditNote->payment_status == CreditNote::PAYMENT_STATUS_CLOSED) {
             return redirect()->back();
         }
-
-        $creditNote = CreditNote::with([
-            'creditNoteAddresses',
-            'terms',
-            'salesItems',
-            'salesItems.taxes',
-            'salesItems.purchaseItem',
-            'salesItems.service',
-            'invoice.project.services',
-            'salesItems.purchaseItem.productUnit:id,title'
-        ])->whereId($creditNote->id)->first();
-
+        $creditNote = CreditNote::with(['creditNoteAddresses', 'terms', 'salesItems', 'salesItems.taxes', 'salesItems.service', 'invoice.project.services'])->whereId($creditNote->id)->first();
         $data = $this->creditNoteRepository->getSyncList();
         $addresses = [];
 
@@ -288,46 +277,25 @@ class CreditNoteController extends AppBaseController
             $addresses[$index] = $address;
         }
 
+        $serviceIds = [];
+        foreach ($creditNote->invoice->project->services as $service) {
+            $serviceIds[] = $service->service_id;
+        }
+
+
+        $projects = $this->creditNoteRepository->getProjects();
+        $services = $data['items'];
+        // dd($creditNote->toArray());
         $categories = $this->creditNoteRepository->getServiceCategories();
         $terms = $this->creditNoteRepository->getTerms();
         $customers = $this->creditNoteRepository->getCustomersAll();
         $usersBranches = $this->creditNoteRepository->getUsersBranches();
 
+
         $settings = Setting::pluck('value', 'key');
         $isRound = $settings['is_round'] ?? 0;
 
-        // Get product units
-        $productUnits = ProductUnit::select('id', 'title')->get()->toArray();
-
-        // Get purchase items with product units
-        $purchaseItems = PurchaseItem::with(['category', 'brand', 'unit', 'productUnit'])
-            ->select('id', 'code', 'name', 'price', 'stock', 'unit_id')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'text' => $item->code ? "{$item->code} - {$item->name}" : $item->name,
-                    'price' => $item->price,
-                    'stock' => $item->stock,
-                    'code' => $item->code,
-                    'name' => $item->name,
-                    'product_unit_id' => $item->product_unit_id,
-                    'product_unit_title' => $item->productUnit ? $item->productUnit->title : ''
-                ];
-            })
-            ->toArray();
-
-        return view('credit_notes.edit', compact(
-            'data',
-            'isRound',
-            'creditNote',
-            'addresses',
-            'categories',
-            'customers',
-            'usersBranches',
-            'purchaseItems',
-            'productUnits'
-        ));
+        return view('credit_notes.edit', compact('data', 'isRound', 'creditNote', 'addresses', 'projects', 'terms', 'services', 'serviceIds', 'categories', 'customers', 'usersBranches'));
     }
 
     /**
