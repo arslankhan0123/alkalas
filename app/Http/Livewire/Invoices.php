@@ -16,6 +16,8 @@ class Invoices extends SearchableComponent
     public $customer = '';
     public $branchFilterID = '';
     public $monthFilter = '';
+    public $startDateFilter = '';
+    public $endDateFilter = '';
 
     /**
      * @var string[]
@@ -25,7 +27,8 @@ class Invoices extends SearchableComponent
         'filterStatus',
         'filterBranch',
         'filterMonth',
-        'filterCustomer'
+        'filterCustomer',
+        'filterDateRange'
     ];
 
     /**
@@ -71,10 +74,19 @@ class Invoices extends SearchableComponent
     {
         $this->setQuery($this->getQuery()->with('customer'));
 
-        $this->getQuery()->where(function (Builder $query) {
-            $this->filterResults();
-        });
+        $this->filterResults();
 
+        // Apply month filter
+        if (!empty($this->monthFilter)) {
+            $date = Carbon::createFromFormat('Y-m', $this->monthFilter);
+
+            $this->getQuery()->where(function (Builder $q) use ($date) {
+                $q->whereYear('invoice_date', $date->year)
+                    ->whereMonth('invoice_date', $date->month);
+            });
+        }
+
+        // Apply other filters
         $this->getQuery()->when($this->statusFilter !== '', function (Builder $q) {
             $q->where('payment_status', $this->statusFilter);
         });
@@ -83,21 +95,9 @@ class Invoices extends SearchableComponent
             $q->where('customer_id', $this->customer);
         });
 
-        $this->getQuery()->when($this->monthFilter !== '', function (Builder $q) {
-            // Parse the selected month (YYYY-MM format)
-            $selectedDate = Carbon::createFromFormat('Y-m', $this->monthFilter);
-            $startDate = $selectedDate->copy()->startOfMonth();
-            $endDate = $selectedDate->copy()->endOfMonth();
-
-            // Filter by invoice_date between start and end of selected month
-            $q->whereBetween('invoice_date', [$startDate, $endDate]);
-        });
-
         $this->getQuery()->when($this->branchFilterID !== '', function (Builder $q) {
-            // If branchFilterID is not empty, filter by branch_id
             $q->where('branch_id', $this->branchFilterID);
         }, function (Builder $q) {
-            // If branchFilterID is empty, filter by user's branch_id
             $q->whereIn('branch_id', function ($query) {
                 $query->select('branch_id')
                     ->from('users_branches')
@@ -105,7 +105,21 @@ class Invoices extends SearchableComponent
             });
         });
 
-        return $this->paginate();
+        // Apply date range filter on invoice_date
+        if (!empty($this->startDateFilter)) {
+            $this->getQuery()->whereDate('invoice_date', '>=', $this->startDateFilter);
+        }
+        if (!empty($this->endDateFilter)) {
+            $this->getQuery()->whereDate('invoice_date', '<=', $this->endDateFilter);
+        }
+
+        // Draft invoices on top (sorted by DI number desc), then regular invoices (by invoice number desc)
+        $this->getQuery()->reorder()
+            ->orderByRaw("CASE WHEN payment_status = 0 THEN 0 ELSE 1 END ASC")
+            ->orderByRaw("LENGTH(invoice_number) DESC")
+            ->orderByRaw("invoice_number DESC");
+
+        return $this->paginate(false);
     }
 
     /**
@@ -116,7 +130,7 @@ class Invoices extends SearchableComponent
         $searchableFields = $this->searchableFields();
         $search = $this->search;
 
-        $this->getQuery()->when(! empty($search), function (Builder $q) use ($search, $searchableFields) {
+        $this->getQuery()->when(!empty($search), function (Builder $q) use ($search, $searchableFields) {
             $this->getQuery()->where(function (Builder $q) use ($search, $searchableFields) {
                 $searchString = '%' . $search . '%';
                 foreach ($searchableFields as $field) {
@@ -145,15 +159,6 @@ class Invoices extends SearchableComponent
     }
 
     /**
-     * @param  int  $id
-     */
-    public function filterBranch($id)
-    {
-        $this->branchFilterID = $id;
-        $this->resetPage();
-    }
-
-    /**
      * @param  string  $month
      */
     public function filterMonth($month)
@@ -173,6 +178,23 @@ class Invoices extends SearchableComponent
 
     public function updatingSearch()
     {
+        $this->resetPage();
+    }
+
+    public function filterBranch($id)
+    {
+        $this->branchFilterID = $id;
+        $this->resetPage();
+    }
+
+    /**
+     * @param  string  $startDate
+     * @param  string  $endDate
+     */
+    public function filterDateRange($startDate, $endDate)
+    {
+        $this->startDateFilter = $startDate;
+        $this->endDateFilter = $endDate;
         $this->resetPage();
     }
 }

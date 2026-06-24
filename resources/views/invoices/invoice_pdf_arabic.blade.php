@@ -13,7 +13,7 @@
     } else {
         //ran
 
-        $com_name = 'مختبر راية  النجاح لمواد البناء';
+        $com_name = 'مختبر راية  النجاح لمواد البناء';
         $trn_number = 310429743800003;
     }
 
@@ -23,12 +23,208 @@
     $bgColor = '#fff7f2';
     $bColor = '#e2e2e2';
 
+    // Footer colors
+    $goldColor = '#d4af37';
+    $whiteColor = '#ffffff';
+
 @endphp
 
 <body>
 
     <head>
         <style>
+            .content_info {
+                padding-left: 5px;
+                padding-right: 5px;
+                padding-bottom: 10px;
+            }
+
+            .content_info table {
+                border: 1px solid {{ $bColor }};
+                border-collapse: collapse;
+            }
+
+            .content_info table th,
+            .content_info table td {
+                border: 1px solid {{ $bColor }};
+                padding: 5px;
+                border: 1px solid {{ $bColor }};
+            }
+
+            /* Apply background only to title cells (odd-numbered cells in each row) */
+            .content_info table tr td:nth-child(odd) {
+                background: {{ $bgColor }};
+                width: 2cm;
+                /* Fixed width for title cells */
+            }
+
+            /* Value cells (even-numbered) have no background */
+            .content_info table tr td:nth-child(even) {
+                background: none;
+            }
+
+            /* Specific adjustment for Arabic name cell which is now odd-positioned */
+            .content_info table tr:nth-child(2) td:nth-child(3) {
+                background: none !important;
+                /* Remove background from Arabic name value cell */
+            }
+
+            .content_items {
+                font-size: 8pt;
+                width: 100%;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+
+            .sales_table_data {
+                width: 100%;
+                border-collapse: collapse;
+                border: 1px solid {{ $bColor }};
+            }
+
+            .sales_table_data th {
+                background: {{ $bgColor }};
+                padding: 8px;
+                text-align: center;
+                border: 1px solid {{ $bColor }};
+            }
+
+            .sales_table_data td {
+                padding: 8px;
+                border: 1px solid {{ $bColor }};
+            }
+
+            .bColor {
+                border: .05cm solid #e2e2e2 !important;
+            }
+
+            .bgColor {
+                background: #fff7f2 !important;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+
+            .footer-container {
+                width: 100%;
+                margin-top: 20px;
+                font-family: DejaVu Sans, Arial, sans-serif;
+            }
+
+            .footer-address-arabic {
+                color: {{ $goldColor }};
+                font-size: 10pt;
+                font-weight: bold;
+                text-align: center;
+                direction: rtl;
+                padding: 2px 0;
+                display: block;
+            }
+
+            .footer-address-english {
+                color: #000000;
+                font-size: 10pt;
+                font-weight: bold;
+                text-align: center;
+                padding: 2px 0;
+                display: block;
+            }
+
+            .footer-contact-row {
+                background-color: {{ $goldColor }};
+                padding: 6px 0;
+                margin: 2px 0;
+            }
+
+            .footer-contact-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 9pt;
+            }
+
+            .footer-contact-email {
+                color: {{ $whiteColor }};
+                text-align: left;
+                padding-left: 15px;
+                font-weight: bold;
+            }
+
+            .footer-contact-website {
+                color: {{ $whiteColor }};
+                text-align: right;
+                padding-right: 15px;
+                font-weight: bold;
+            }
+
+            .footer-page-info {
+                text-align: center;
+                font-size: 8pt;
+                color: #666;
+                padding: 3px 0;
+                margin: 0;
+            }
+
+            /* Arabic text support */
+            .arabic-text {
+                direction: rtl;
+                text-align: right;
+                font-family: DejaVu Sans, 'Traditional Arabic', Arial, sans-serif;
+                unicode-bidi: embed;
+                white-space: normal;
+                word-wrap: break-word;
+            }
+
+            .vat-value-cell {
+                direction: rtl;
+                unicode-bidi: embed;
+                font-family: DejaVu Sans, 'Traditional Arabic', Arial, sans-serif;
+                text-align: right;
+                padding: 5px 2px 5px 5px !important;
+                /* Less padding on right, more on left */
+                background: none !important;
+                width: auto !important;
+                min-width: 3cm !important;
+                /* Increased min-width */
+            }
+
+            /* Fix for the last cell in each row to fill remaining space */
+            .content_info table tr td:last-child {
+                width: auto !important;
+                padding-right: 5px !important;
+            }
+
+            /* Remove extra padding/margin for value cells */
+            .value-cell {
+                padding: 5px !important;
+                text-align: left;
+            }
+
+            .arabic-value-cell {
+                direction: rtl;
+                text-align: right;
+                font-family: DejaVu Sans, 'Traditional Arabic', Arial, sans-serif;
+                unicode-bidi: embed;
+                padding: 5px !important;
+            }
+
+            .value-cell,
+            .arabic-value-cell,
+            .vat-value-cell,
+            .content_info table tr td[class*="value-cell"] {
+                background: none !important;
+            }
+
+            .arabic-value-cell {
+                direction: rtl;
+                unicode-bidi: embed;
+                font-family: DejaVu Sans, 'Traditional Arabic', Arial, sans-serif;
+                text-align: right;
+                padding: 5px !important;
+                background: none !important;
+            }
+        </style>
+        {{-- <style>
             .content_info {
                 padding-left: 5px;
                 padding-right: 5px;
@@ -103,155 +299,240 @@
                 /* Ensure content starts on a new page */
             }
 
+            /* Footer Styles */
+            .footer-container {
+                width: 100%;
+                margin-top: 20px;
+                font-family: DejaVu Sans, Arial, sans-serif;
+            }
 
-        </style>
+            .footer-address-arabic {
+                color: {{ $goldColor }};
+                font-size: 10pt;
+                font-weight: bold;
+                text-align: center;
+                direction: rtl;
+                padding: 2px 0;
+                /* margin: 0; */
+                display: block;
+            }
+
+            .footer-address-english {
+                color: #000000;
+                font-size: 10pt;
+                font-weight: bold;
+                text-align: center;
+                padding: 2px 0;
+                /* margin: 0; */
+                display: block;
+            }
+
+            .footer-contact-row {
+                background-color: {{ $goldColor }};
+                padding: 6px 0;
+                margin: 2px 0;
+            }
+
+            .footer-contact-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 9pt;
+            }
+
+            .footer-contact-email {
+                color: {{ $whiteColor }};
+                text-align: left;
+                padding-left: 15px;
+                font-weight: bold;
+            }
+
+            .footer-contact-website {
+                color: {{ $whiteColor }};
+                text-align: right;
+                padding-right: 15px;
+                font-weight: bold;
+            }
+
+            .footer-page-info {
+                text-align: center;
+                font-size: 8pt;
+                color: #666;
+                padding: 3px 0;
+                margin: 0;
+            }
+        </style> --}}
     </head>
+
     <main>
         <div class="content_info">
             <table border="1" cellspacing="0" cellpadding="5"
-                style="width: 100%;layout:fixed; border-collapse: collapse;font-size:11px;line-height:9px;padding-right:3px;">
-                <tr>
-                    <td style="width: 2cm;">Invoice No. <br>رقم الفاتورة </td>
-                    <td style="width: 1.22cm;">{{ $invoice->invoice_number }}</td>
-                    <td style="width: 2.40cm;">Invoice Date <br>تاريخ الفاتورة </td>
-                    <td style="width: 2cm;">{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</td>
-                    <td style="width: 2.30cm;">Invoice Month <br>فاتورة الشهر </td>
-                    <td style="width: 3.36cm;">{{ \Carbon\Carbon::parse($invoice->invoice_month)->format('F, Y') }}
-                    </td>
-                    <td style="width: 2.40cm; ">Payment Modes <br>شروط الدفع </td>
-                    <td style="width:2cm;">
-                        <p>
-                            @if ($invoice->paymentModes->count() > 1)
-                                {{-- Display all payment modes in a comma-separated list for multiple items --}}
-                                {{ $invoice->paymentModes->pluck('name')->implode(', ') }}
-                            @elseif ($invoice->paymentModes->count() === 1)
-                                {{-- Display the single payment mode --}}
-                                {{ $invoice->paymentModes->first()->name }}
-                            @else
-                                {{-- Display "N/A" when no payment modes exist --}}
-                                {{ __('messages.common.n/a') }}
-                            @endif
-                        </p>
+                style="width:100%; table-layout:fixed; border-collapse:collapse; font-size:11px; line-height:14px;">
 
+                <!-- Row 1 -->
+                <tr>
+                    <td style="width:2cm;">Invoice No.<br>رقم الفاتورة</td>
+                    <td style="width:2.5cm;" class="value-cell">{{ $invoice->invoice_number }}</td>
+
+                    <td style="width:2.5cm;">Invoice Date<br>تاريخ الفاتورة</td>
+                    <td style="width:2.5cm;" class="value-cell">
+                        {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}
+                    </td>
+
+                    <td style="width:2.5cm;">Invoice Month<br>فاتورة الشهر</td>
+                    <td style="width:2.5cm;" class="value-cell">
+                        {{ \Carbon\Carbon::parse($invoice->invoice_month)->format('F, Y') }}
+                    </td>
+
+                    <td style="width:2.5cm;">Payment Mode<br>شروط الدفع</td>
+                    <td style="width:auto;" class="value-cell">
+                        @if ($invoice->paymentModes->count() > 1)
+                            {{ $invoice->paymentModes->pluck('name')->implode(', ') }}
+                        @elseif ($invoice->paymentModes->count() === 1)
+                            {{ $invoice->paymentModes->first()->name }}
+                        @else
+                            {{ __('messages.common.n/a') }}
+                        @endif
                     </td>
                 </tr>
+
+                <!-- Row 2 - Adjusted for Arabic name without title -->
                 <tr>
-                    <td style="width: 2cm;">Cust. No. <br>رقم العميل </td>
-                    <td style="width: 1.22cm;">{{ $invoice->customer->code ?? 'N/A' }}</td>
-                    <td style="width: 2cm;">Cust. Name <br>اسم العميل</td>
-                    <!--<td colspan="3">{{ $invoice->customer->company_name ?? 'N/A' }}</td>-->
-                    <td colspan="3">{!! $invoice->customer->company_name ?? 'N/A' !!}</td>
-                    <td style="width: 2.30cm;">Cust. Vat No. <br>رقم الضريبة للعميل</td>
-                    <td
-                        style="width: 2cm; word-wrap: break-word; word-break: break-word; white-space: normal; overflow-wrap: break-word; overflow: hidden; padding: 2px;">
+                    <!-- English Customer Name -->
+                    <td>Cust. Name<br>اسم العميل</td>
+                    <td colspan="2" class="value-cell">
+                        {!! $invoice->customer->company_name ?? 'N/A' !!}
+                    </td>
+
+                    <!-- Arabic Customer Name - Only value, no title -->
+                    <!-- This cell will be position 3 (odd) but we want no background -->
+                    <td colspan="2" class="arabic-value-cell" style="background: none !important;">
+                        {!! $invoice->customer->customer_arabic_name ?? 'N/A' !!}
+                    </td>
+
+                    <!-- VAT Number -->
+                    <td>Cust. VAT No.<br>رقم الضريبة</td>
+                    <td class="vat-value-cell" colspan="2"
+                        style="width: 4cm !important; min-width: 4cm !important; padding-right: 0 !important;">
                         {{ $invoice->customer->vat_number ?? 'N/A' }}
                     </td>
-
                 </tr>
+
+                <!-- Row 3 -->
                 <tr>
-                    <td style="width: 2cm;">Vendor Code <br> رمز المورد</td>
-                    <td style="width: 1cm; word-wrap: break-word; word-break: break-word;">
-                        {{ $invoice->vendor_code ?? '' }}
+                    {{-- <td>Vendor Code<br>رمز المورد</td>
+                    <td class="value-cell">{{ $invoice->vendor_code ?? 'N/A' }}</td> --}}
+                    <td>Vendor Code<br>رمز المورد</td>
+                    <td class="arabic-value-cell">{{ $invoice->vendor_code ?? 'N/A' }}</td>
+
+                    <td>P.O Number<br>رقم أمر الشراء</td>
+                    <td class="value-cell">{{ $invoice->project->po_number ?? 'N/A' }}</td>
+
+                    <td>Due Date<br>تاريخ الاستحقاق</td>
+                    <td class="value-cell">{{ \Carbon\Carbon::parse($invoice->due_date)->format('d-m-Y') }}</td>
+
+                    <td>Customer No.<br>رقم العميل</td>
+                    <td class="value-cell">{{ $invoice->customer->code ?? 'N/A' }}</td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr>
+                    <td>Project Code<br>رقم المشروع</td>
+                    <td class="value-cell">{{ $invoice->project->project_code ?? 'N/A' }}</td>
+
+                    <td>Project Name<br>اسم المشروع</td>
+                    <td colspan="3" class="value-cell">
+                        {!! $invoice->project->project_name ?? 'N/A' !!}
                     </td>
-                    <td style="width: 2cm;">Due Date<br>تاريخ الإ‘ستحقاق </td>
-                    <td style="width: 2cm;">{{ \Carbon\Carbon::parse($invoice->due_date)->format('d-m-Y') }}</td>
-                    <td style="width: 2.30cm;">P.O Number <br>رقم امر الشراء </td>
-                    <td style="width: 3.36cm;">{{ $invoice->project->po_number ?? 'N/A' }}</td>
-                    <td style="width: 2.30cm;">Project Name <br> اسم المشروع</td>
-                    <!--<td style="width:2cm;">{{ $invoice->project->project_name ?? 'N/A' }}</td>-->
-                    <td style="width: 2cm;">{!! $invoice->project->project_name ?? 'N/A' !!}</td>
-                </tr>
-                <tr>
-                    <td style="width: 2cm;">Project Code <br> رقم المشروع</td>
-                    <td style="width: 1.22cm;">{{ $invoice->project->project_code ?? 'N/A' }}</td>
-                    <td style="width: 2cm;">Project Location<br>موقع المشروع</td>
-                    <td style="width: 2cm;">{{ $invoice->project->project_location ?? 'N/A' }}</td>
-                    <td style="width: 2.30cm;">Email<br>بريد إلكتروني</td>
-                    <td colspan="3">{{ $invoice->customer->email ?? 'N/A' }}</td>
 
-                </tr>
-                <tr>
-
-                    <td>Address<br>العنوان</td>
-                    <td colspan="3">
-                        {{-- @if ($invoice->invoiceAddresses && $invoice->invoiceAddresses->isNotEmpty())
-                            @foreach ($invoice->invoiceAddresses as $address)
-                                <div style=" word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">
-                                    {{ implode(', ', array_filter([$address->street, $address->city, $address->state, $address->country, $address->zip_code])) }}
-                                </div>
-                            @endforeach
-                        @else --}}
-                        <div style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">
-                            @if (isset($invoice->customer->customerAddress))
-                                {{ $invoice->customer?->customerAddress?->addressCountry?->name ?? ' ' }},
-                                {{ $invoice->customer?->customerAddress?->city ?? ' ' }},
-                                {{ $invoice->customer?->customerAddress?->customerState?->name ?? ' ' }},
-                                {{ $invoice->customer?->customerAddress?->zip ?? ' ' }}
-                                {{ $invoice->customer?->address ?? ' ' }}
-                            @else
-                                N/A
-                            @endif
-                        </div>
-                        {{-- @endif --}}
+                    <td>Project Location<br>موقع المشروع</td>
+                    <td class="arabic-value-cell">
+                        {{ $invoice->project->project_location ?? 'N/A' }}
                     </td>
-                    <td>Branch<br>فرع</td>
-                    <td colspan="3">{{ $invoice->branch?->name ?? '' }}</td>
                 </tr>
+
+                <!-- Row 5 : Address FULL WIDTH -->
+                <tr>
+                    <td>Cust. Address<br>العنوان</td>
+                    <td colspan="7" style="word-wrap:break-word; white-space:normal;">
+                        @if (isset($invoice->customer->customerAddress))
+                            {{ $invoice->customer?->customerAddress?->addressCountry?->name ?? '' }},
+                            {{ $invoice->customer?->customerAddress?->city ?? '' }},
+                            {{ $invoice->customer?->customerAddress?->customerState?->name ?? '' }},
+                            {{ $invoice->customer?->customerAddress?->zip ?? '' }}
+                            {{ $invoice->customer?->address ?? '' }}
+                        @else
+                            N/A
+                        @endif
+                    </td>
+                </tr>
+
             </table>
-
         </div>
         <div class="content_items">
             <table class="sales_table_data" style="font-size: 12px;line-height:12px;">
                 <thead>
                     <tr style="padding: 0px;">
-                        <th style="width: 5%;">S.<br>الرقم</th>
-                        <th style="width: 9%;">Item<br>رقم الصنف</th>
-                        <th class="text-center" style="width: 18%;">Description<br>الوصف</th>
-                        <th style="width: 6%;">Qty<br>الكيمة</th>
-                        <th class="text-center pr-3" style="width: 10%;">Rate<br>السعر</th>
-                        <th style="text-align:center;width: 7%;" class="p-0 pr-1">Disc.<br>خصم</th>
-                        <th style="text-align: center; width: 10%;" class="p-0 pr-1">Taxable<br>للضريبة</th>
-                        <th style="text-align: center;width: 6%;" class="p-0 pr-1">Vat %<br>ضريبة</th>
-                        <th style="text-align: center;width: 6%;" class="pr-1">Vat <br>قيمة </th>
+                        <!-- Made even smaller: 1% -->
+                        <th style="width: 1%;">S.<br>الرقم</th>
+
+                        <!-- Made even smaller: 5% -->
+                        <th style="width: 2%;">Item<br>رقم الصنف</th>
+
+                        <!-- Made much larger: 40% -->
+                        <th class="text-center" style="width: 60%;">Description<br>الوصف</th>
+
+                        <!-- Made even smaller: 3% -->
+                        <th style="width: 2%;">Qty<br>الكيمة</th>
+
+                        <!-- Made smaller: 8% -->
+                        <th class="text-center pr-3" style="width: 8%;">Rate<br>السعر</th>
+
+                        <!-- Made even smaller: 4% -->
+                        <th style="text-align:center;width: 3%;" class="p-0 pr-1">Disc.<br>خصم</th>
+
                         <th class="p-0 text-center pr-2 w-20" style="width: 11%;">Amount<br>الإجمالي </th>
                     </tr>
                 </thead>
                 <tbody>
-
                     @foreach ($invoice->salesItems as $index => $item)
                         @php
                             $befoPrice = $item->quantity * $item->rate - $item->discount; // After discount
                             $vatAmount = $befoPrice * ($item->tax / 100); // Apply tax on the net price
-                            $netPrice = $befoPrice + $vatAmount;
-
+                            $netPrice = $befoPrice;
                         @endphp
                         <tr>
-                            <td style=" text-align:center; ">
+                            <!-- 3% width -->
+                            <td style="text-align:center; width: 0.6cm;">
                                 {{ $index + 1 }}</td>
-                            <td style=" padding: 2px; text-align:center; padding-left:5px; width:1.10cm;">
-                                {{ $item->item }}</td>
-                            <td
-                                style=" padding: 2px; text-align:left; padding-left:1%; word-wrap: break-word; word-break: break-all;">
-                                {{ html_entity_decode($item->service->title ?? '') }}</td>
 
-                            <td style=" text-align:center;">
+                            <!-- 5% width -->
+                            <td style="padding: 2px; text-align:center; padding-left:3px; width:0.8cm;">
+                                {{ $item->item }}</td>
+
+                            <!-- 40% width - Much bigger now -->
+                            <td
+                                style="padding: 2px; text-align:left; padding-left:1%; word-wrap: break-word; word-break: break-all; width: 6.5cm;">
+                                {{ html_entity_decode($item->service->title ?? '') }}
+                                @if (!empty($item->service->title_arabic))
+                                    / <span
+                                        style="direction: rtl; unicode-bidi: plaintext;">{{ $item->service->title_arabic }}</span>
+                                @endif
+                            </td>
+
+                            <!-- 3% width -->
+                            <td style="text-align:center; width: 0.6cm;">
                                 {{ $item['quantity'] }}</td>
-                            <td style="text-align:right; width:1.50cm;">
+
+                            <!-- 8% width -->
+                            <td style="text-align:right; width:1.2cm;">
                                 {{ number_format($item['rate'], 2) }}</td>
-                            <td style=" text-align:right;width:1.30cm;">
+
+                            <!-- 4% width -->
+                            <td style="text-align:right; width:0.8cm;">
                                 {{ number_format($item['discount'], 2) }}</td>
-                            <td style=" text-align:right;width:1.30cm;">
-                                {{ number_format($item['quantity'] * $item['rate'] - $item['discount'], 2) }}</td>
-                            <!-- Excluding VAT Amount -->
-                            <td style=" text-align:right; ">
-                                {{ (int)($item->tax) }}%
-                            </td>
-                            <td style=" text-align:right; padding-right:.5%">
-                                {{ number_format($vatAmount, 2) }} <!-- VAT Amount -->
-                            </td>
-                            <td style=" text-align:right; padding-right:1%">
+
+                            <td style="text-align:right; padding-right:1%; width:1.8cm;">
                                 {{ number_format($netPrice, 2) }}
-                                <!-- Including VAT -->
                             </td>
                         </tr>
                     @endforeach
@@ -460,6 +741,21 @@
                                     <strong> <span>المجموع الخضم </span></strong>
                                 </td>
                             </tr>
+                            {{-- Absent Deduction --}}
+                             <tr>
+                                <th class="font-weight-bold bgColor"
+                                    style="border: 1px solid {{ $bColor }}; padding: 7px; text-align: right;">
+                                    Deduction
+                                </th>
+                                <td class="text-right p-1"
+                                    style="border: 1px solid {{ $bColor }}; padding: 7px; text-align: right;">
+                                    {{ number_format($invoice->absent_deduction ?? 0, 2) }}
+                                </td>
+                                <td class="font-weight-bold bgColor"
+                                    style="border: 1px solid {{ $bColor }}; padding: 6px; text-align: right;">
+                                    <strong><span>خصم الغياب</span></strong>
+                                </td>
+                            </tr> 
 
                             <tr>
                                 <td class="font-weight-bold bgColor"
@@ -577,6 +873,7 @@
                 </td>
             </tr>
         </table>
+        <!-- Footer Section -->
 
 
     </main>

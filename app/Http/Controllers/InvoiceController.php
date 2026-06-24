@@ -583,20 +583,25 @@ class InvoiceController extends AppBaseController
 
         // dd($invoice->customer->toArray());
         $bankDetails = Bank::first();
+        // Calculate subtotal
         $subtotal = 0;
-        $totalTaxable = 0;
-        $totalVat = 0;
-        // Loop through the sales items to calculate totals
         foreach ($invoice->salesItems as $item) {
-            //$itemVATAmount = $itemSubtotalExcludingVAT * ($item->tax / 100);
-            $subtotal += ($item->quantity * $item->rate);
-            $totalTaxable += ($item->quantity * $item->rate) - $item->discount;
-            $totalVat += (($item->quantity * $item->rate) - $item->discount) * .05;
+            $subtotal += $item->taxable;
         }
 
-        $words = $this->amountToWords($invoice->total_amount);
+        // Apply global deductions
+        $totalDiscount = $invoice->discount ?? 0;
+        $absentDeduction = $invoice->absent_deduction ?? 0;
+        $allowanceDeduction = $invoice->allowance_deduction ?? 0;
+        $damageDeduction = $invoice->damage_deduction ?? 0;
 
-        $wordsAr = $this->amountToWords($invoice->total_amount, 'ar');
+        $totalTaxable = $subtotal - $totalDiscount - $absentDeduction - $allowanceDeduction - $damageDeduction;
+        $totalVat = $totalTaxable * 0.15;
+        $totalDeductions = $absentDeduction + $allowanceDeduction + $damageDeduction;
+
+        $words = $this->amountToWords($totalTaxable + $totalVat);
+
+        $wordsAr = $this->amountToWords($totalTaxable + $totalVat, 'ar');
 
 
 
@@ -646,7 +651,8 @@ class InvoiceController extends AppBaseController
             'bank' => $bankDetails,
             'headerImage' => $headerImage,
             'footerImage' => $footerImage,
-            'isRound' => $isRound
+            'isRound' => $isRound,
+            'totalDeductions' => $totalDeductions
         ];
 
         $invoiceText = ($invoice->payment_status === 0)
@@ -666,7 +672,7 @@ class InvoiceController extends AppBaseController
                 <!-- Additional Content Below the Image -->
                 <div class="content-header" style="width: 100%; height: 1.80cm; margin: 0; position: relative;">
                     <div class="vat" style="display: inline-block; padding: 5px; font-size: 12pt; padding-left: 0.26cm; text-align: left; padding-top: 20px; width: 30%; float: left;">
-                           Vat No. : ' . ($settings['vat_number'] ?? 'N/A') . '
+                        Vat No. : ' . ($settings['vat_number'] ?? '311204277500003') . '
                     </div>
                     <div class="content_header_title" style="vertical-align: middle; margin-top: 10px; float: left; display: inline-block; width: 35%; height: 1.13cm; text-align: center; line-height: 40px; border: 1px solid #e2e2e2; background: #fff7f2;">
                         <table style="width: 100%; border-collapse: collapse; margin-top: 5px; margin-left: 5px;">

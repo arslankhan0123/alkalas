@@ -133,8 +133,9 @@
                     <td style="width: 2cm;">Cust. No. <br>رقم العميل </td>
                     <td style="width: 1.22cm;">{{ $invoice->customer->code ?? 'N/A' }}</td>
                     <td style="width: 2cm;">Cust. Name <br>اسم العميل</td>
-                    <!--<td colspan="3">{{ $invoice->customer->company_name ?? 'N/A' }}</td>-->
-                    <td colspan="3">{!! $invoice->customer->company_name ?? 'N/A' !!}</td>
+
+                    <td colspan="3">{!! optional($invoice->customer)->company_name ?: ($invoice->customer_name ?: 'N/A') !!}</td>
+
                     <td style="width: 2.30cm;">Cust. Vat No. <br>رقم الضريبة للعميل</td>
                     <td
                         style="width: 2cm; word-wrap: break-word; word-break: break-word; white-space: normal; overflow-wrap: break-word; overflow: hidden; padding: 2px;">
@@ -214,7 +215,7 @@
                         @php
                             $befoPrice = $item->quantity * $item->rate - $item->discount; // After discount
                             $vatAmount = $befoPrice * ($item->tax / 100); // Apply tax on the net price
-                            $netPrice = $befoPrice + $vatAmount;
+                            $netPrice = $befoPrice;
 
                         @endphp
                         <tr>
@@ -236,7 +237,7 @@
                                 {{ number_format($item['quantity'] * $item['rate'] - $item['discount'], 2) }}</td>
                             <!-- Excluding VAT Amount -->
                             <td style=" text-align:right; ">
-                                {{ (int)($item->tax) }}%
+                                {{ (int) $item->tax }}%
                             </td>
                             <td style=" text-align:right; padding-right:.5%">
                                 {{ number_format($vatAmount, 2) }} <!-- VAT Amount -->
