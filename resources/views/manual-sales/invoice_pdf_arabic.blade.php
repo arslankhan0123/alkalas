@@ -16,6 +16,10 @@
         $com_name = 'مختبر راية  النجاح لمواد البناء';
         $trn_number = 310429743800003;
     }
+
+    $com_name = $settings['company'];
+    $trn_number = $settings['vat_number'];
+    
     $bgColor = '#fff7f2';
     $bColor = '#e2e2e2';
 
