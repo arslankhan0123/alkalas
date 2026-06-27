@@ -339,54 +339,20 @@ class InvoiceController extends AppBaseController
         foreach ($invoice->invoiceAddresses as $index => $address) {
             $addresses[$index] = $address;
         }
-
+        $projects = $this->invoiceRepository->getProjects();
+        // dd($invoice->toArray());
+        $services = $data['items'];
+        $categories = $this->invoiceRepository->getServiceCategories();
         $terms = $this->invoiceRepository->getTerms();
         $customers = $this->invoiceRepository->getCustomersAll();
         $usersBranches = $this->invoiceRepository->getUsersBranches();
-
-        // Get all branches for manual selection
-        $branches = Branch::pluck('name', 'id');
-
-        // Fetch all purchase items for the dropdown
-        // $purchaseItems = PurchaseItem::select('id', 'code', 'name', 'price', 'stock')
-        //     ->get()
-        //     ->map(function ($item) {
-        //         return [
-        //             'id' => $item->id,
-        //             'text' => $item->code ? "{$item->code} - {$item->name}" : $item->name,
-        //             'price' => $item->price,
-        //             'stock' => $item->stock,
-        //             'code' => $item->code,
-        //             'name' => $item->name
-        //         ];
-        //     })
-        //     ->toArray();
-
-        $productUnits = ProductUnit::select('id', 'title')->get()->toArray();
-
-        // Get purchase items with their units
-        $purchaseItems = PurchaseItem::select('id', 'code', 'name', 'price', 'stock', 'unit_id')
-            ->where('stock', '>', 0)
-            ->with('productUnit:id,title')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'text' => $item->code ? "{$item->code} - {$item->name}" : $item->name,
-                    'price' => $item->price,
-                    'stock' => $item->stock,
-                    'code' => $item->code,
-                    'name' => $item->name,
-                    'product_unit_id' => $item->product_unit_id,
-                    'product_unit_title' => $item->productUnit ? $item->productUnit->title : ''
-                ];
-            })
-            ->toArray();
+        // dd($invoice->toArray());
 
         $settings = Setting::pluck('value', 'key');
         $isRound = $settings['is_round'] ?? 0;
+        $salesItems = $invoice->salesItems;
 
-        return view('invoices.edit', compact('data', 'isRound', 'invoice', 'addresses', 'terms', 'customers', 'usersBranches', 'branches', 'purchaseItems', 'productUnits'));
+        return view('invoices.edit', compact('data', 'isRound', 'invoice', 'salesItems', 'addresses', 'projects', 'terms', 'services', 'categories', 'customers', 'usersBranches'));
     }
     // public function edit(Invoice $invoice)
     // {
@@ -583,10 +549,10 @@ class InvoiceController extends AppBaseController
 
         // dd($invoice->customer->toArray());
         $bankDetails = Bank::first();
-        // Calculate subtotal
+        // Calculate subtotal: sum of (quantity * rate - item-level discount) for each item
         $subtotal = 0;
         foreach ($invoice->salesItems as $item) {
-            $subtotal += $item->taxable;
+            $subtotal += ($item->quantity * $item->rate) - ($item->discount ?? 0);
         }
 
         // Apply global deductions

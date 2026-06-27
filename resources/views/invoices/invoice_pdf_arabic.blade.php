@@ -749,7 +749,7 @@
                                 </th>
                                 <td class="text-right p-1"
                                     style="border: 1px solid {{ $bColor }}; padding: 7px; text-align: right;">
-                                    {{ number_format($invoice->absent_deduction ?? 0, 2) }}
+                                    {{ number_format($totalDeductions ?? 0, 2) }}
                                 </td>
                                 <td class="font-weight-bold bgColor"
                                     style="border: 1px solid {{ $bColor }}; padding: 6px; text-align: right;">
@@ -809,7 +809,7 @@
                                     <strong>Net Amount</strong>
                                 </td>
                                 <td style="border: 1px solid {{ $bColor }}; padding: 7px; text-align: right;">
-                                    {{ number_format($invoice->total_amount ?? 0, 2) }}
+                                    {{ number_format($totalTaxable + $totalVat, 2) }}
                                 </td>
                                 <td class="font-weight-bold bgColor"
                                     style="border: 1px solid {{ $bColor }}; padding: 6px; text-align: right;">
