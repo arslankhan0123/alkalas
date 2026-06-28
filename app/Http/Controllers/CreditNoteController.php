@@ -194,7 +194,7 @@ class CreditNoteController extends AppBaseController
             //$itemVATAmount = $itemSubtotalExcludingVAT * ($item->tax / 100);
             $subtotal += ($item->quantity * $item->rate);
             $totalTaxable += ($item->quantity * $item->rate) - $item->discount;
-            $totalVat += (($item->quantity * $item->rate) - $item->discount) * .05;
+            $totalVat += (($item->quantity * $item->rate) - $item->discount) * ($item->tax / 100);
         }
 
         $words = $this->amountToWords($creditNote->total_amount);
@@ -364,7 +364,7 @@ class CreditNoteController extends AppBaseController
             //$itemVATAmount = $itemSubtotalExcludingVAT * ($item->tax / 100);
             $subtotal += ($item->quantity * $item->rate);
             $totalTaxable += ($item->quantity * $item->rate) - $item->discount;
-            $totalVat += (($item->quantity * $item->rate) - $item->discount) * .05;
+            $totalVat += (($item->quantity * $item->rate) - $item->discount) * ($item->tax / 100);
         }
 
         $words = $this->amountToWords($creditNote->total_amount);

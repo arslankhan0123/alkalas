@@ -28,6 +28,7 @@ use App\Models\ServiceCategory;
 use App\Models\ProjectTerm;
 use App\Models\Branch;
 use App\Models\Account;
+use App\Models\PurchaseItem;
 
 /**
  * Class InvoiceRepository
@@ -161,23 +162,7 @@ class InvoiceRepository extends BaseRepository
      */
     public function saveInvoice($input)
     {
-        // $oldContactIds = Contact::where('customer_id', '=', $input['customer_id'])->where(
-        //     'primary_contact',
-        //     '=',
-        //     '1'
-        // )->pluck('user_id')->toArray();
-        // $contactIds = Contact::where('customer_id', '=', $input['customer_id'])->where(
-        //     'primary_contact',
-        //     '=',
-        //     '1'
-        // )->pluck('user_id')->toArray();
-        // $userContacts = User::whereIn('id', $contactIds)->get();
-        // /** @var Invoice $invoice */
         $invoice = $this->create($this->prepareInvoiceData($input));
-
-
-        //updateing accounts
-
         $totalAmount = $input['total_amount'];
         $branchId = $input['branch_id'];
 
@@ -189,9 +174,6 @@ class InvoiceRepository extends BaseRepository
             $account->opening_balance += $totalAmount;
             $account->save();
         }
-        ///
-
-
         $users = User::whereId($invoice->sales_agent_id)->get();
 
         if ($invoice->payment_status == Invoice::STATUS_UNPAID) {
@@ -205,28 +187,6 @@ class InvoiceRepository extends BaseRepository
                     ]);
                 }
             }
-            // if (! empty($input['customer_id'])) {
-            //     foreach ($userContacts as $user) {
-            //         Notification::create([
-            //             'title' => 'New Invoice Created',
-            //             'description' => 'You are assigned to ' . $invoice->title,
-            //             'type' => Invoice::class,
-            //             'user_id' => $user->id,
-            //         ]);
-
-            //         foreach ($oldContactIds as $oldUser) {
-            //             if ($oldUser == $user->id) {
-            //                 continue;
-            //             }
-            //             Notification::create([
-            //                 'title' => 'New User Assigned to Invoice',
-            //                 'description' => $user->first_name . ' ' . $user->last_name . ' assigned to ' . $invoice->title,
-            //                 'type' => Invoice::class,
-            //                 'user_id' => $oldUser,
-            //             ]);
-            //         }
-            //     }
-            // }
         }
         activity()->performedOn($invoice)->causedBy(getLoggedInUser())
             ->useLog('New Invoice created.')->log($invoice->title . ' Invoice created.');
@@ -237,15 +197,8 @@ class InvoiceRepository extends BaseRepository
 
         $paymentModes = ! empty($input['payment_modes']) ? $input['payment_modes'] : [];
         $invoice->paymentModes()->sync($paymentModes);
-
-        // // Store Address
-        // $this->addInvoiceAddresses($input, $invoice);
-        // // Store Items
         $this->storeSalesItems($input, $invoice);
         $this->storeTerms($invoice->id, $input);
-        // Store Applied Taxes with Amount
-        // $this->storeSalesTaxes($input, $invoice);
-
         return $invoice;
     }
 
@@ -325,43 +278,145 @@ class InvoiceRepository extends BaseRepository
      * @param  Invoice|CreditNote|Estimate  $owner
      * @return bool
      */
+    // public function storeSalesItems($input, $owner)
+    // {
+    //     $input = $this->sanitizeInput($input);
+
+    //     $owner->salesItems()->delete();
+
+
+    //     foreach ($input['itemsArr'] as $record) {
+    //         $data['owner_id'] = $owner->getId();
+    //         $data['owner_type'] = $owner->getOwnerType();
+    //         $data['service_id'] = $record['service_id'] ?? null;
+    //         $data['category_id'] = $record['category_id'] ?? null;
+    //         $data['item'] = $record['item'] ?? ' ';
+    //         $data['description'] = $record['description'] ?? ' ';
+    //         $data['headline'] = $record['headline'] ?? ' ';
+    //         $data['subheadline'] = $record['subheadline'] ?? ' ';
+    //         $data['rate'] =  $record['rate'] ?? 0;
+    //         $data['tax'] =  $record['tax'] ?? 0;
+    //         $data['total'] = $record['total'] ?? 0;
+    //         $data = array_merge($record, $data);
+
+
+    //         $salesItem = SalesItem::create($data);
+
+    //         // if (! empty($record['tax'])) {
+    //         //     $taxes = explode(',', $record['tax']);
+    //         //     $taxes = (empty(array_filter($taxes))) ? [] : $taxes;
+    //         //     $salesItem->taxes()->sync($taxes);
+    //         // }
+
+    //         $data = [];
+    //     }
+
+    //     return true;
+    // }
+    // public function storeSalesItems($input, $owner)
+    // {
+    //     $input = $this->sanitizeInput($input);
+    //     $owner->salesItems()->delete();
+
+    //     foreach ($input['itemsArr'] as $record) {
+    //         // Get purchase item to get category_id
+    //         $purchaseItem = null;
+    //         if (isset($record['purchase_item_id'])) {
+    //             $purchaseItem = PurchaseItem::find($record['purchase_item_id']);
+    //         }
+
+    //         $data['owner_id'] = $owner->getId();
+    //         $data['owner_type'] = $owner->getOwnerType();
+    //         $data['service_id'] = $record['purchase_item_id'] ?? null;
+    //         $data['category_id'] = $purchaseItem ? $purchaseItem->purchase_category_id : null;
+    //         $data['product_unit_id'] = $record['product_unit_id'] ?? null;
+    //         $data['item'] = $record['item_code'] ?? ' ';
+    //         $data['description'] = 'Purchase Item Sale';
+    //         $data['headline'] = 'Purchase Item';
+    //         $data['subheadline'] = 'Sale';
+    //         $data['rate'] = $record['rate'] ?? 0;
+    //         $data['tax'] = $record['tax'] ?? 0;
+    //         $data['total'] = $record['total'] ?? 0;
+    //         $data = array_merge($record, $data);
+
+    //         $salesItem = SalesItem::create($data);
+
+    //         // Update stock in purchase_items table
+    //         if ($purchaseItem && isset($record['quantity'])) {
+    //             $purchaseItem->qty_out += $record['quantity'];
+    //             $purchaseItem->stock = $purchaseItem->qty_in - $purchaseItem->qty_out;
+    //             $purchaseItem->save();
+    //         }
+
+    //         $data = [];
+    //     }
+    //     return true;
+    // }
+
     public function storeSalesItems($input, $owner)
     {
         $input = $this->sanitizeInput($input);
-
         $owner->salesItems()->delete();
-
 
         foreach ($input['itemsArr'] as $record) {
             $data['owner_id'] = $owner->getId();
             $data['owner_type'] = $owner->getOwnerType();
-            $data['service_id'] = $record['service_id'] ?? null;
-            $data['category_id'] = $record['category_id'] ?? null;
-            $data['item'] = $record['item'] ?? ' ';
-            $data['description'] = $record['description'] ?? ' ';
-            $data['headline'] = $record['headline'] ?? ' ';
-            $data['subheadline'] = $record['subheadline'] ?? ' ';
-            $data['rate'] =  floatval($record['rate'] ?? 0);
-            $data['quantity'] = floatval($record['quantity'] ?? 0);
-            $data['tax'] =  $record['tax'] ?? 0;
-            $data['total'] = $record['total'] ?? 0;
-            $data = array_merge($record, $data);
 
-            // Always recalculate taxable from quantity * rate to ensure correct value
-            $data['taxable'] = $data['quantity'] * $data['rate'];
+            if ($owner->getOwnerType() === 'App\Models\CreditNote') {
+                $data['service_id'] = $record['service_id'] ?? null;
+                $data['category_id'] = $record['category_id'] ?? null;
+                $data['item'] = $record['item'] ?? ' ';
+                $data['rate'] = $record['rate'] ?? 0;
+                $data['tax'] = $record['tax'] ?? 0;
+                $data['total'] = $record['total'] ?? 0;
+                $data = array_merge($record, $data);
 
+                $salesItem = SalesItem::create($data);
+            } else {
+                // Get purchase item to get category_id
+                $purchaseItem = null;
+                if (isset($record['purchase_item_id'])) {
+                    $purchaseItem = PurchaseItem::find($record['purchase_item_id']);
+                }
 
-            $salesItem = SalesItem::create($data);
+                $data['service_id'] = $record['purchase_item_id'] ?? null;
+                $data['category_id'] = $purchaseItem ? $purchaseItem->purchase_category_id : null;
+                $data['product_unit_id'] = $record['product_unit_id'] ?? null;
+                $data['item'] = $record['item_code'] ?? ' ';
+                $data['description'] = 'Purchase Item Sale';
+                $data['headline'] = 'Purchase Item';
+                $data['subheadline'] = 'Sale';
+                $data['rate'] = $record['rate'] ?? 0;
+                $data['tax'] = $record['tax'] ?? 0;
+                $data['total'] = $record['total'] ?? 0;
+                $data = array_merge($record, $data);
 
-            // if (! empty($record['tax'])) {
-            //     $taxes = explode(',', $record['tax']);
-            //     $taxes = (empty(array_filter($taxes))) ? [] : $taxes;
-            //     $salesItem->taxes()->sync($taxes);
-            // }
+                $salesItem = SalesItem::create($data);
+
+                // Update stock in purchase_items table based on owner type
+                if ($purchaseItem && isset($record['quantity'])) {
+                    $quantity = $record['quantity'];
+
+                    // Normal Sales Invoice: Subtract from stock
+                    $purchaseItem->qty_out += $quantity;
+                    $purchaseItem->stock = $purchaseItem->qty_in - $purchaseItem->qty_out;
+
+                    // Ensure stock doesn't go below zero
+                    if ($purchaseItem->stock < 0) {
+                        $purchaseItem->stock = 0;
+                    }
+
+                    // Ensure qty_out doesn't go below zero
+                    if ($purchaseItem->qty_out < 0) {
+                        $purchaseItem->qty_out = 0;
+                    }
+
+                    $purchaseItem->save();
+                }
+            }
 
             $data = [];
         }
-
         return true;
     }
 
@@ -383,6 +438,26 @@ class InvoiceRepository extends BaseRepository
      * @param  array  $input
      * @return array
      */
+    // public function prepareInvoiceData($input)
+    // {
+    //     $invoiceFields = (new Invoice())->getFillable();
+    //     $items = [];
+
+    //     foreach ($input as $key => $value) {
+    //         if (in_array($key, $invoiceFields)) {
+    //             $items[$key] = $value;
+    //         }
+    //     }
+
+    //     $items['total_amount'] = formatNumberNew($input['total_amount_new']);
+    //     $items['discount'] = formatNumberNew(isset($input['final_discount']) ? $input['final_discount'] : 0);
+    //     // $items['sub_total'] = formatNumber($input['sub_total_new']);
+    //     $items['payment_status'] = $input['payment_status'];
+
+
+    //     return $items;
+    // }
+
     public function prepareInvoiceData($input)
     {
         $invoiceFields = (new Invoice())->getFillable();
@@ -396,10 +471,13 @@ class InvoiceRepository extends BaseRepository
 
         $items['total_amount'] = formatNumberNew($input['total_amount_new']);
         $items['discount'] = formatNumberNew(isset($input['final_discount']) ? $input['final_discount'] : 0);
-        // $items['sub_total'] = formatNumber($input['sub_total_new']);
+
+        // Add deduction fields
+        $items['absent_deduction'] = formatNumberNew(isset($input['absent_deduction']) ? $input['absent_deduction'] : 0);
+        $items['allowance_deduction'] = formatNumberNew(isset($input['allowance_deduction']) ? $input['allowance_deduction'] : 0);
+        $items['damage_deduction'] = formatNumberNew(isset($input['damage_deduction']) ? $input['damage_deduction'] : 0);
+
         $items['payment_status'] = $input['payment_status'];
-
-
         return $items;
     }
 
@@ -667,28 +745,53 @@ class InvoiceRepository extends BaseRepository
     {
         $invoice = Invoice::with([
             'customer',
+            'salesItems.purchaseItem.productUnit',
             'user',
-            'salesItems.taxes',
-            'salesItems.service',
-            'salesItems.category',
+            'salesItems' => function ($query) {
+                $query->with([
+                    'taxes',
+                    'purchaseItem' // Make sure this relationship exists
+                ]);
+            },
             'invoiceAddresses',
             'payments.paymentMode',
             'salesTaxes',
-            'project',
-            'project.terms',
-            'project.projectServices.categories',
-            'project.projectServices.service',
             'terms',
             'branch',
             'branch.bank',
             'customer.customerAddress',
             'customer.customerAddress.addressCountry',
             'customer.customerAddress.customerState',
-
         ])->find($id);
 
         return $invoice;
     }
+    // public function getSyncListForInvoiceDetail($id)
+    // {
+    //     $invoice = Invoice::with([
+    //         'customer',
+    //         'user',
+    //         'salesItems.taxes',
+    //         'salesItems.service',
+    //         'salesItems.category',
+    //         'invoiceAddresses',
+    //         'payments.paymentMode',
+    //         'salesTaxes',
+    //         'project',
+    //         'project.terms',
+    //         'project.projectServices.categories',
+    //         'project.projectServices.service',
+    //         'terms',
+    //         'branch',
+    //         'branch.bank',
+    //         'customer.customerAddress',
+    //         'customer.customerAddress.addressCountry',
+    //         'customer.customerAddress.customerState',
+
+    //     ])->find($id);
+
+    //     return $invoice;
+    // }
 
     /**
      * @param  int  $id
