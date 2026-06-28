@@ -219,7 +219,7 @@
                         @php
                             $befoPrice = $item->quantity * $item->rate - $item->discount; // After discount
                             $vatAmount = $befoPrice * ($item->tax / 100); // Apply tax on the net price
-                            $netPrice = $befoPrice;
+                            $netPrice = $befoPrice + $vatAmount;
 
                         @endphp
                         <tr>
